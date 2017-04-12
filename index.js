@@ -10,7 +10,7 @@ var deploy = require('deploy-azure-cdn');
  */
 module.exports = function (opt) {
     var PLUGIN_NAME = 'gulp-deploy-azure-cdn ';
-    var files = [];
+
     // upload files all at once, not one by one because we want to get some speed
     // doing it concurrently
     return through.obj(
@@ -27,22 +27,17 @@ module.exports = function (opt) {
                 self.emit('error', new gutil.PluginError(PLUGIN_NAME, 'Streaming not supported'));
                 return cb();
             }
-            files.push(file);
-            return cb();
-        },
-        function (cb) {
-            var self = this;
             var logger = gutil.log.bind(PLUGIN_NAME);
             try {
-                deploy(opt, files, logger, function (err) {
+                deploy(opt, [file], logger, function (err) {
                     if (err) {
-                        self.emit('error', new gutil.PluginError(PLUGIN_NAME, err));
+                        this.emit('error', new gutil.PluginError(PLUGIN_NAME, err));
+                    } else {
+                        cb(null, file);
                     }
-                    cb();
                 })
             } catch (err) {
-                self.emit('error', new gutil.PluginError(PLUGIN_NAME, err));
-                cb();
+                this.emit('error', new gutil.PluginError(PLUGIN_NAME, err));
             }
         });
 };
